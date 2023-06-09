@@ -1,0 +1,4 @@
+# TODO: have to set versions
+pandas==2.0.1
+face_recognition==0.3.0
+numpy== 1.24.2
