@@ -1,2 +1,10 @@
 #.gitignore
 env/
+
+# Ignore compiled Python files
+*.pyc
+
+# Ignore cache directories
+__pycache__/
+
+*.pytest_cache
