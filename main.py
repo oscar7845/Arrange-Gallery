@@ -21,10 +21,15 @@ if __name__ == "__main__":
     # Pretty print (DataFrame):
     print(tabulate(df, headers='keys', tablefmt='psql'))
 
-    # TODO: Store as .csv
+    # TODO: get all ids
+    # TODO: replace name of individual
+    # TODO: get all images of individual
+    # TODO: merge persons
+    # TODO: rearrange images
+    # TODO: remove duplicates
+    # TODO: create larger test dataset
+
     # TODO: add gui
     # TODO: write tests
-    # TODO: rearange images
-    # TODO: remove duplicates
     # TODO: create test ci/cd
     

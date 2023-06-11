@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 import time
 from multiprocessing import Pool
+from tqdm import tqdm
 
 def get_known_face_encodings(df):
     known_face_names = []
@@ -34,7 +35,6 @@ def detect_persons(df, tolerance=0.6):
             df.loc[i, 'id'] = f"Unknown{unknown_counter}"
             unknown_counter+=1
     return df
-
 
 def single_process_detect_faces(image_path, rescale):
     #
@@ -72,7 +72,7 @@ def multi_process_detect_faces(image_path):
         new_row = pd.DataFrame({"image_path": [image_path], "box": [rect], "face_encoding": [encodings],"id": [None]})
         df = pd.concat([df,new_row], ignore_index=True)
 
-    print(f"Done with {image_path}")
+    #print(f"Done with {image_path}")
 
     return df
 
@@ -83,19 +83,20 @@ def multi_process_detect_all_faces_in_album(path, workers=8):
     #
     image_paths = file.find_images(path)
 
-    pool = Pool(workers)
+    with Pool(workers) as pool:
+        dfs = []
+        for result in tqdm(pool.imap(multi_process_detect_faces, image_paths), total=len(image_paths)):
+            dfs.append(result)
 
-    dfs = pool.map(multi_process_detect_faces, image_paths)
-    
-    df = pd.concat(dfs, ignore_index=True)
+        df = pd.concat(dfs, ignore_index=True)
 
-    print("")
-    print(" ---- Statistics -----")
-    print(f"A total of {len(df)} faces were detected in album.")
-    print("")
+        print("")
+        print(" ---- Statistics -----")
+        print(f"A total of {len(df)} faces were detected in album.")
+        print("")
 
-    pool.close()
-    pool.join()
+        pool.close()
+        pool.join()
 
     return df 
 
@@ -107,7 +108,7 @@ def single_process_detect_all_faces_in_album(path, workers=8, show_images=False,
 
     df_detection_column_names = ["image_path", "box", "face_encoding", "id"]
     df = pd.DataFrame(columns=df_detection_column_names)
-
+    
 
     for i,path in enumerate(image_paths):
         if estimate_time:
@@ -126,7 +127,7 @@ def single_process_detect_all_faces_in_album(path, workers=8, show_images=False,
             cv2.destroyAllWindows()
 
         print(f"In image {path} {len(face_rects)} faces detected.")
-    
+ 
         for  rect, encodings in zip(face_rects,face_encodings):
             new_row = pd.DataFrame({"image_path": [path], "box": [rect], "face_encoding": [encodings],"id": [None]})
             df = pd.concat([df,new_row], ignore_index=True)
