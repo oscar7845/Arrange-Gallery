@@ -1,5 +1,6 @@
 import face_recognition
 from . import file
+from . import db
 import pandas as pd
 import numpy as np
 import cv2
@@ -10,7 +11,7 @@ from tqdm import tqdm
 def get_known_face_encodings(df):
     known_face_names = []
     known_face_encodings = []
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         if row["id"] is not None:
             known_face_names.append(row["id"])
             known_face_encodings.append(row["face_encoding"])
@@ -65,14 +66,11 @@ def multi_process_detect_faces(image_path):
     face_locations = face_recognition.face_locations(image) # model can be changed! cnn is CUDA accelerated!
     face_encodings = face_recognition.face_encodings(image, face_locations)
 
-    df_detection_column_names = ["image_path", "box", "face_encoding", "id"]
-    df = pd.DataFrame(columns=df_detection_column_names)
+    df = db.create(["image_path", "box", "face_encoding", "id"])
 
     for rect, encodings in zip(face_locations,face_encodings):
         new_row = pd.DataFrame({"image_path": [image_path], "box": [rect], "face_encoding": [encodings],"id": [None]})
         df = pd.concat([df,new_row], ignore_index=True)
-
-    #print(f"Done with {image_path}")
 
     return df
 
@@ -106,9 +104,7 @@ def single_process_detect_all_faces_in_album(path, workers=8, show_images=False,
     #
     image_paths = file.find_images(path)
 
-    df_detection_column_names = ["image_path", "box", "face_encoding", "id"]
-    df = pd.DataFrame(columns=df_detection_column_names)
-    
+    df = db.create(["image_path", "box", "face_encoding", "id"])
 
     for i,path in enumerate(image_paths):
         if estimate_time:
@@ -127,7 +123,7 @@ def single_process_detect_all_faces_in_album(path, workers=8, show_images=False,
             cv2.destroyAllWindows()
 
         print(f"In image {path} {len(face_rects)} faces detected.")
- 
+
         for  rect, encodings in zip(face_rects,face_encodings):
             new_row = pd.DataFrame({"image_path": [path], "box": [rect], "face_encoding": [encodings],"id": [None]})
             df = pd.concat([df,new_row], ignore_index=True)

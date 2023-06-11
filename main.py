@@ -1,6 +1,6 @@
 from utils import ai
+from utils import db
 import os
-import pandas as pd
 from tabulate import tabulate
 
 if __name__ == "__main__":
@@ -13,18 +13,26 @@ if __name__ == "__main__":
     dir_path = os.path.dirname(store_csv_path)
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
-    df.to_csv(store_csv_path, index=False)
+    db.save(df, store_csv_path)
 
     # Read df again
-    df = pd.read_csv(store_csv_path)
+    df = db.load(store_csv_path) # Test only, good for caching
+    
+    print(f"All ids in dataset : {db.get_all_ids(df)}")
+    
+    print("Rename/Replace id Unknown2 with Person1")
+    df = db.replace_id(df,"Unknown2","Person1") # Test only
+    
+    all_images = db.get_all_images_of_individual(df,"Unknown3") # Test only
+    print("Images for id Unknown3: ", all_images)
+
+    print("Merge id Unknown0 and Unknown1.")
+    df = db.merge_ids(df, "Unknown0","Unknown1") # Test only
 
     # Pretty print (DataFrame):
     print(tabulate(df, headers='keys', tablefmt='psql'))
 
-    # TODO: get all ids
-    # TODO: replace name of individual
-    # TODO: get all images of individual
-    # TODO: merge persons
+
     # TODO: rearrange images
     # TODO: remove duplicates
     # TODO: create larger test dataset
