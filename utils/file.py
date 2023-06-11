@@ -31,7 +31,11 @@ def save_individual_images(base_path,df,person,ignore_list=[]):
     folder_path = f"{base_path}{person}"
     os.makedirs(folder_path, exist_ok=True)
 
-    image_list = db.get_all_images_of_individual(df,person)
+    if person is None:
+        image_list = db.get_all_images_of_non_individuals(df)
+    else:
+        image_list = db.get_all_images_of_individual(df,person)
+
     for image_path in image_list:
         if image_path in ignore_list:
             continue
@@ -41,11 +45,19 @@ def save_individual_images(base_path,df,person,ignore_list=[]):
        
 def save_all_individual_from_album(base_path,df, allow_copies=False):
     persons = db.get_all_ids(df)
+    
     print(f"Will now copy all files into individual folders. allow_copies={allow_copies}")
     ignore_list=[]
     
     for i,person in enumerate(persons):
         print(f"Currently on {i+1}/{len(persons)}")
+        
+        try:
+            if np.isnan(person):
+                person = None
+        except Exception:
+            pass
+
         save_individual_images(base_path, df,person, ignore_list)
         if not allow_copies: # make sure images are not copied several times
             ignore_list.extend( db.get_all_images_of_individual(df,person))
