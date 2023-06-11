@@ -27,6 +27,9 @@ def detect_persons(df, tolerance=0.6):
 
         face_encoding = row["face_encoding"]
 
+        if face_encoding is None: # No faces found in image
+            continue
+
         matches = face_recognition.compare_faces(known_face_encodings, face_encoding, tolerance=tolerance)
 
         if any(matches):
@@ -37,33 +40,15 @@ def detect_persons(df, tolerance=0.6):
             unknown_counter+=1
     return df
 
-def single_process_detect_faces(image_path, rescale):
-    #
-    # Detects faces and face encoding using (HOG default) + Linear SVM face detection.
-    #
-    image = face_recognition.load_image_file(image_path)
-    if rescale is not None:
-        width,height,_ = image.shape
-        new_size = (int(width*rescale), int(height*rescale))
-        image = cv2.resize(image, new_size)
-    face_locations = face_recognition.face_locations(image) # model can be changed!
-    face_encodings = face_recognition.face_encodings(image, face_locations)
-
-    return face_locations, face_encodings, image
-
-def detect_all_faces_in_album(path, multi_process=True, workers=8, show_images=False, images_show_timer=1, rescale=None, estimate_time=True):
-    if multi_process:
-        return multi_process_detect_all_faces_in_album(path, workers=workers)
-    else:
-        return single_process_detect_all_faces_in_album(path, workers=workers, show_images=show_images, images_show_timer=images_show_timer, rescale=rescale, estimate_time=estimate_time)
-
+def detect_all_faces_in_album(path, workers=8):
+    return multi_process_detect_all_faces_in_album(path, workers=workers)
 
 def multi_process_detect_faces(image_path):
     #
     # Detects faces and face encoding using (HOG default) + Linear SVM face detection.
     #
     image = face_recognition.load_image_file(image_path)
-    face_locations = face_recognition.face_locations(image) # model can be changed! cnn is CUDA accelerated!
+    face_locations = face_recognition.face_locations(image, model="hog") # Change model here! HOG is faster on CPU! CNN is more accurate and faster on GPU with CUDA!
     face_encodings = face_recognition.face_encodings(image, face_locations)
 
     df = db.create(["image_path", "box", "face_encoding", "id"])
@@ -101,55 +86,6 @@ def multi_process_detect_all_faces_in_album(path, workers=8):
         pool.join()
 
     return df 
-
-def single_process_detect_all_faces_in_album(path, workers=8, show_images=False, images_show_timer=1, rescale=None, estimate_time=True):
-    #
-    # Loops over each image in path subdirectories and detects faces and calculates face encodings. Returns a pandas.DataFrame where each detected face is a row.
-    #
-    image_paths = file.find_images(path)
-
-    df = db.create(["image_path", "box", "face_encoding", "id"])
-
-    for i,path in enumerate(image_paths):
-        if estimate_time:
-            start_time = time.time()
-
-        print(f"On image {i+1}/{len(image_paths)}")
-        face_rects, face_encodings, image = single_process_detect_faces(path, rescale)
-
-        if show_images:
-            for top, right, bottom, left in face_rects:
-                cv2.rectangle(image, (left, top), (right, bottom), (0, 0, 255), 2)
-
-            resized_image = cv2.resize(image, (500, 500))
-            cv2.imshow(path, resized_image)
-            cv2.waitKey(images_show_timer)
-            cv2.destroyAllWindows()
-
-        print(f"In image {path} {len(face_rects)} faces detected.")
-
-        if len(face_rects) == 0: 
-            new_row = pd.DataFrame({"image_path": [path], "box": [None], "face_encoding": [None],"id": [None]})
-            df = pd.concat([df,new_row], ignore_index=True)
-        else:
-            for  rect, encodings in zip(face_rects,face_encodings):
-                new_row = pd.DataFrame({"image_path": [path], "box": [rect], "face_encoding": [encodings],"id": [None]})
-                df = pd.concat([df,new_row], ignore_index=True)
-        
-        if estimate_time:
-            end_time = time.time()
-            execution_time = (end_time - start_time)*(len(image_paths)-i+1)
-            execution_time_str = time.strftime('%H:%M:%S', time.gmtime(execution_time))
-
-            print(f" Estimated Time Left : {execution_time_str}")
-    
-    print("")
-    print(" ---- Statistics -----")
-    print(f"A total of {len(df)} faces were detected in album.")
-    print("")
-
-    return df 
-
 
 
 """

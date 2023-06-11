@@ -17,7 +17,7 @@ def replace_id(df,old_id,new_id):
     return df 
 
 def get_all_images_of_individual(df,id):
-    return df[df['id'] == id]["image_path"]
+    return df[df['id'] == id]["image_path"].unique()
 
 def merge_ids(df, id1,id2):
     # Will merge two id:s to represent the same person and get id1:s name
