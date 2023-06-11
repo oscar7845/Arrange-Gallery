@@ -3,8 +3,6 @@ from . import file
 from . import db
 import pandas as pd
 import numpy as np
-import cv2
-import time
 from multiprocessing import Pool
 from tqdm import tqdm
 
@@ -16,6 +14,7 @@ def get_known_face_encodings(df):
             known_face_names.append(row["id"])
             known_face_encodings.append(row["face_encoding"])
     return known_face_names, known_face_encodings
+
 
 def detect_persons(df, tolerance=0.6):
     #
