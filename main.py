@@ -33,11 +33,14 @@ if __name__ == "__main__":
     print(tabulate(df, headers='keys', tablefmt='psql'))
 
 
+
     # TODO: rearrange images
     # TODO: remove duplicates
-    # TODO: create larger test dataset
+    # TODO: test on larger dataset
 
-    # TODO: add gui
     # TODO: write tests
     # TODO: create test ci/cd
-    
+    # TODO: add gui
+
+    # TODO: crop all faces of individual and create large coolage
+    # TODO: extra feature: generate gallery slideshow depending on fun settings like color, warmth, peoples or not, resolution, size, format, features, intensity, 

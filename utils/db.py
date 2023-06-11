@@ -22,3 +22,6 @@ def get_all_images_of_individual(df,id):
 def merge_ids(df, id1,id2):
     # Will merge two id:s to represent the same person and get id1:s name
     return replace_id(df, id2, id1)
+
+def get_all_images_missing_faces(df):
+    return df[df['box'] == None]["image_path"]

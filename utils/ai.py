@@ -68,9 +68,13 @@ def multi_process_detect_faces(image_path):
 
     df = db.create(["image_path", "box", "face_encoding", "id"])
 
-    for rect, encodings in zip(face_locations,face_encodings):
-        new_row = pd.DataFrame({"image_path": [image_path], "box": [rect], "face_encoding": [encodings],"id": [None]})
+    if len(face_locations) == 0:
+        new_row = pd.DataFrame({"image_path": [image_path], "box": [None], "face_encoding": [None],"id": [None]})
         df = pd.concat([df,new_row], ignore_index=True)
+    else:
+        for rect, encodings in zip(face_locations,face_encodings):
+            new_row = pd.DataFrame({"image_path": [image_path], "box": [rect], "face_encoding": [encodings],"id": [None]})
+            df = pd.concat([df,new_row], ignore_index=True)
 
     return df
 
@@ -124,9 +128,13 @@ def single_process_detect_all_faces_in_album(path, workers=8, show_images=False,
 
         print(f"In image {path} {len(face_rects)} faces detected.")
 
-        for  rect, encodings in zip(face_rects,face_encodings):
-            new_row = pd.DataFrame({"image_path": [path], "box": [rect], "face_encoding": [encodings],"id": [None]})
+        if len(face_rects) == 0: 
+            new_row = pd.DataFrame({"image_path": [path], "box": [None], "face_encoding": [None],"id": [None]})
             df = pd.concat([df,new_row], ignore_index=True)
+        else:
+            for  rect, encodings in zip(face_rects,face_encodings):
+                new_row = pd.DataFrame({"image_path": [path], "box": [rect], "face_encoding": [encodings],"id": [None]})
+                df = pd.concat([df,new_row], ignore_index=True)
         
         if estimate_time:
             end_time = time.time()
@@ -141,3 +149,31 @@ def single_process_detect_all_faces_in_album(path, workers=8, show_images=False,
     print("")
 
     return df 
+
+
+
+"""
+#TODO: for later
+import tensorflow as tf
+from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.vgg16 import preprocess_input, decode_predictions
+
+def sentiment_analysis(image_path):
+    # Load the VGG-16 model
+    model = tf.keras.applications.VGG16(weights='imagenet')
+    
+    # Load and preprocess the image
+    img = image.load_img(image_path, target_size=(224, 224))
+    x = image.img_to_array(img)
+    x = preprocess_input(x)
+    x = np.expand_dims(x, axis=0)
+    
+    # Use the model to predict the emotions conveyed by the image
+    preds = model.predict(x)
+    results = decode_predictions(preds, top=5)[0]
+    
+    # Print the top 5 emotions predicted by the model
+    for result in results:
+        print(result[1], ':', result[2])
+
+"""
