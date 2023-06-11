@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
     path = "./images/" 
     df = ai.detect_all_faces_in_album(path, workers=8) # TODO: add checkpointing, smaller dataset
-    df = ai.detect_persons(df, tolerance=0.6) # TODO: add progress bar, add checkpointing
+    df = ai.detect_persons(df, tolerance=0.6) # TODO: add checkpointing
 
     # Save to CSV file safe
     store_csv_path = './data/tmp/tmp.csv'
