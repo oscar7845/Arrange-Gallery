@@ -57,7 +57,7 @@ def save_all_individual_from_album(base_path, df, allow_copies=False):
         except Exception:
             pass 
         save_individual_images(base_path, df, person, ignore_list)
-        if not allow_copies:  
+        if not allow_copies: 
             ignore_list.extend(db.get_all_images_of_individual(df, person))
 
 
@@ -69,6 +69,11 @@ def backup(file_path, folder_path):
     shutil.copy2(file_path, dest_path)
     print(f"Backuped {file_path} to {dest_path}.")
 
+def save_csv(csv_storage_path, df):
+    dir_path = os.path.dirname(csv_storage_path)
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    db.save(df, csv_storage_path)
 
 def find_duplicates(rootdir):
     hash_dict = {}
