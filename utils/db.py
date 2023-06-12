@@ -30,3 +30,12 @@ def merge_ids(df, id1, id2):
 
 def get_all_images_missing_faces(df):
     return df[df["box"] == None]["image_path"].unique()
+
+def get_known_face_encodings(df):
+    known_face_names = []
+    known_face_encodings = []
+    for _, row in df.iterrows():
+        if row["id"] is not None:
+            known_face_names.append(row["id"])
+            known_face_encodings.append(row["face_encoding"])
+    return known_face_names, known_face_encodings

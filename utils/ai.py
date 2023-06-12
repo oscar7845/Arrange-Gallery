@@ -9,20 +9,10 @@ import pickle
 import os
 import itertools
 
-def get_known_face_encodings(df):
-    known_face_names = []
-    known_face_encodings = []
-    for _, row in df.iterrows():
-        if row["id"] is not None:
-            known_face_names.append(row["id"])
-            known_face_encodings.append(row["face_encoding"])
-    return known_face_names, known_face_encodings
-
-
 def detect_persons(
     df,
     tolerance=0.6,
-    checkpoint_name="./data/tmp/detect_person_checkpoint.pkl",
+    checkpoint_path="./data/tmp/detect_person_checkpoint.pkl",
     checkpoint_interval=10,
     ):
     j = 0
@@ -34,14 +24,14 @@ def detect_persons(
     print(f"Number of checkpoint_interval: {checkpoint_interval}")
 
     try:
-        with open(checkpoint_name, "rb") as f:
+        with open(checkpoint_path, "rb") as f:
             df, j, unknown_counter = pickle.load(f)
             print(f"Checkpoint found, continuing from id {j}")
     except FileNotFoundError:
         pass
 
     for i, row in tqdm(itertools.islice(df.iterrows(), j, None), total=len(df)):
-        known_face_names, known_face_encodings = get_known_face_encodings(df)
+        known_face_names, known_face_encodings = db.get_known_face_encodings(df)
 
         face_encoding = row["face_encoding"]
 
@@ -60,22 +50,31 @@ def detect_persons(
             unknown_counter += 1
 
         if i % checkpoint_interval == 0 and i != 0:
-            with open(checkpoint_name, "wb+") as f:
+            print()
+            print()
+            print(f"Checkpoint - {i+1}/{len(df)}")
+            print()
+            # create checkpoint
+            with open(checkpoint_path, "wb+") as f:
                 pickle.dump((df, i, unknown_counter), f)
-
-    os.remove(checkpoint_name)
 
     print("----- Face comparison and person clustering performed on dataset -----")
     print(f" An amount of {unknown_counter} new persons were found!")
 
     return df
 
-
-def detect_all_faces_in_album(path, workers=8, checkpoint_interval=50):
+def detect_all_faces_in_album(
+    path,
+    workers=8,
+    checkpoint_interval=50,
+    checkpoint_path="./data/tmp/detect_faces_checkpoint.pkl",
+):
     return multi_process_detect_all_faces_in_album(
-        path, workers=workers, checkpoint_interval=checkpoint_interval
+        path,
+        workers=workers,
+        checkpoint_interval=checkpoint_interval,
+        checkpoint_path=checkpoint_path,
     )
-
 
 def multi_process_detect_faces(image_path):
     image = face_recognition.load_image_file(image_path)
@@ -110,11 +109,10 @@ def multi_process_detect_faces(image_path):
 
     return df
 
-
 def multi_process_detect_all_faces_in_album(
     path,
     workers=8,
-    checkpoint_name="./data/tmp/detect_faces_checkpoint.pkl",
+    checkpoint_path="./data/tmp/detect_faces_checkpoint.pkl",
     checkpoint_interval=2,
 ):
     image_paths = file.find_images(path)
@@ -134,7 +132,7 @@ def multi_process_detect_all_faces_in_album(
     i = 0
     dfss = []
     try:
-        with open(checkpoint_name, "rb") as f:
+        with open(checkpoint_path, "rb") as f:
             dfss, i = pickle.load(f)
             print(f"Checkpoint found, continuing from id {i}")
     except FileNotFoundError:
@@ -154,13 +152,13 @@ def multi_process_detect_all_faces_in_album(
             try:
                 dfss.append(pd.concat(dfs, ignore_index=True))
             except ValueError as ve:
-                pass    
+                pass
 
             print()
             print()
             print(f"Checkpoint - {j+1}/{len(splitted_paths)}")
             print()
-            with open(checkpoint_name, "wb+") as f:
+            with open(checkpoint_path, "wb+") as f:
                 pickle.dump((dfss, j + 1), f)
 
         pool.close()
@@ -171,38 +169,9 @@ def multi_process_detect_all_faces_in_album(
     except ValueError as ve:
         pass 
 
-    os.remove(checkpoint_name)  # TODO: add backup storage
-
     print("")
     print(" ---- Statistics -----")
     print(f"A total of {len(df)} faces were detected in album.")
     print("")
 
     return df
-
-
-"""
-#TODO: for later
-import tensorflow as tf
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.vgg16 import preprocess_input, decode_predictions
-
-def sentiment_analysis(image_path):
-    # Load the VGG-16 model
-    model = tf.keras.applications.VGG16(weights='imagenet')
-    
-    # Load and preprocess the image
-    img = image.load_img(image_path, target_size=(224, 224))
-    x = image.img_to_array(img)
-    x = preprocess_input(x)
-    x = np.expand_dims(x, axis=0)
-    
-    # Use the model to predict the emotions conveyed by the image
-    preds = model.predict(x)
-    results = decode_predictions(preds, top=5)[0]
-    
-    # Print the top 5 emotions predicted by the model
-    for result in results:
-        print(result[1], ':', result[2])
-
-"""

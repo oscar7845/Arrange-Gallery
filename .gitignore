@@ -8,3 +8,9 @@ env/
 __pycache__/
 
 *.pytest_cache
+
+# Test images
+/data/album/
+#
+/data/tmp/
+/data/backups/

@@ -1,19 +1,40 @@
 from utils import ai
 from utils import db
+from utils import file
+from utils import run
 import os
 from tabulate import tabulate
 
 if __name__ == "__main__":
-    path = "./images/"
-    df = ai.detect_all_faces_in_album(path, workers=8, checkpoint_interval=50)  # TODO: add backup, remove checkpoint after program done
-    df = ai.detect_persons(df, tolerance=0.6, checkpoint_interval=50)  # TODO: add backup , remove checkpoint after program done
+    album_path = "./images/"
 
-    # Save to CSV file safe
-    store_csv_path = "./data/tmp/tmp.csv"
-    dir_path = os.path.dirname(store_csv_path)
+    backup_checkpoints = True
+    backup_folder = "./data/backups/"
+
+    backup_csv = True
+    csv_storage_path = "./data/tmp/fr_db.csv"
+
+    checkpoint_path1 = "./data/tmp/detect_faces_checkpoint.pkl"
+    checkpoint_path2 = "./data/tmp/compare_person_checkpoint.pkl"
+
+    df = run.face_recognition_on_album(
+        album_path,
+        workers=8,
+        tolerance=0.6,
+        checkpoint_interval=100,
+        backup_checkpoints=backup_checkpoints,
+        backup_folder=backup_folder,
+        checkpoint_path1=checkpoint_path1,
+        checkpoint_path2=checkpoint_path2,
+    )
+
+    dir_path = os.path.dirname(csv_storage_path)
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
-    db.save(df, store_csv_path)
+    db.save(df, csv_storage_path)
+
+    if backup_csv:
+        file.backup(csv_storage_path, backup_folder)
 
     """
     # Read df again
