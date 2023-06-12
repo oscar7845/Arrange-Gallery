@@ -3,6 +3,7 @@ import os
 import shutil
 import numpy as np
 import hashlib
+from tqdm import tqdm
 
 def find_images(directory):
     image_extensions = [".jpg", ".jpeg", ".png", ".gif"]
@@ -49,21 +50,20 @@ def save_all_individual_from_album(base_path, df, allow_copies=False):
     print(f"Will now copy all files into individual folders. allow_copies={allow_copies}")
     ignore_list = []
 
-    for i, person in enumerate(persons):
-        print(f"Currently on {i+1}/{len(persons)}")
+    for i,person in tqdm(np.ndenumerate(persons),total=len(persons)):
         try:
             if np.isnan(person):
                 person = None
         except Exception:
-            pass 
+            pass  
         save_individual_images(base_path, df, person, ignore_list)
-        if not allow_copies: 
+        if not allow_copies:  
             ignore_list.extend(db.get_all_images_of_individual(df, person))
 
 
 def backup(file_path, folder_path):
     if not os.path.exists(file_path):
-        return 
+        return  
     os.makedirs(folder_path, exist_ok=True)
     dest_path = get_appropriate_incremental_name(file_path, folder_path)
     shutil.copy2(file_path, dest_path)

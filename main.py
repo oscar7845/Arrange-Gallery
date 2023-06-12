@@ -1,9 +1,8 @@
-from utils import ai
-from utils import db
 from utils import file
 from utils import run
 import os
 from tabulate import tabulate
+import shutil
 
 if __name__ == "__main__":
     album_path = "./images/"
@@ -38,11 +37,11 @@ if __name__ == "__main__":
     # print(tabulate(df, headers='keys', tablefmt='psql'))
     print(df)
 
+    target_path = "./target/"
+    if os.path.exists(target_path):
+        shutil.rmtree(target_path)
+    file.save_all_individual_from_album(target_path,df, allow_copies=False) 
+
     # TODO: test on larger dataset
 
-    # TODO: write tests
     # TODO: create test ci/cd
-    # TODO: add gui
-
-    # TODO: crop all faces of individual and create large coolage
-    # TODO: extra feature: generate gallery slideshow depending on fun settings like color, warmth, peoples or not, resolution, size, format, features, intensity, new/old, order, scenario/inside, text_recognition, aspect ratio, orientation, sharp/smooth edges, animal and object detection
