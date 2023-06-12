@@ -22,16 +22,32 @@ class DraggableImage:
 
     def drag(self, event):
         if self.dragging:
-            x = self.label.winfo_x() - self.parent.winfo_rootx() + event.x - self.offset_x
-            y = self.label.winfo_y() - self.parent.winfo_rooty() + event.y - self.offset_y
+            x = (
+                self.label.winfo_x()
+                - self.parent.winfo_rootx()
+                + event.x
+                - self.offset_x
+            )
+            y = (
+                self.label.winfo_y()
+                - self.parent.winfo_rooty()
+                + event.y
+                - self.offset_y
+            )
             self.label.place(x=x, y=y)
 
     def drop(self, event):
         self.dragging = False
-        x, y = event.widget.winfo_rootx() - self.parent.winfo_rootx(), event.widget.winfo_rooty() - self.parent.winfo_rooty()
+        x, y = (
+            event.widget.winfo_rootx() - self.parent.winfo_rootx(),
+            event.widget.winfo_rooty() - self.parent.winfo_rooty(),
+        )
         target = self.parent.winfo_containing(x, y)
         if target != self.label and isinstance(target, tk.Label):
-            target_row, target_column = target.grid_info()["row"], target.grid_info()["column"]
+            target_row, target_column = (
+                target.grid_info()["row"],
+                target.grid_info()["column"],
+            )
             print(f"Dropped image {self.row}, {self.column} onto {target_row}, {target_column}")
 
 root = tk.Tk()
