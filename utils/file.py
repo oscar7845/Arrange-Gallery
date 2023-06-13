@@ -20,7 +20,7 @@ def transform_images_size(album_path, target_path, width=640,height=480, fx=0.5,
     os.makedirs(dest)
     
 
-    print("----- Resize -----")
+    print("----- Album Resizing -----")
     print(f"Created folder {dest} for image resizing results.")
     print(f"Mode {mode}")
     print(f"Width : {width}, Height : {height}, Fx : {fx}, Fy : {fy}")

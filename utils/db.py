@@ -1,5 +1,9 @@
 import pandas as pd
 
+
+def load_dataframe(path):
+    return pd.read_csv(path)
+
 def create(df_detection_column_names):
     return pd.DataFrame(columns=df_detection_column_names)
 
