@@ -7,8 +7,7 @@ from pyfiglet import Figlet
 
 if __name__ == "__main__":
     f = Figlet(font="slant")
-    print(f.renderText("Album Organizer"))
-
+    print(f.renderText("text"))
     album_path = "./images/"
 
     backup_checkpoints = True
@@ -35,7 +34,6 @@ if __name__ == "__main__":
 
     if backup_csv:
         file.backup(csv_storage_path, backup_folder)
-
 
     # Pretty print (DataFrame):
     # print(tabulate(df, headers='keys', tablefmt='psql'))

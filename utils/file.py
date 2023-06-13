@@ -4,6 +4,49 @@ import shutil
 import numpy as np
 import hashlib
 from tqdm import tqdm
+import cv2
+
+from enum import Enum
+
+class ResizeMode(Enum):
+    SCALE = 1
+    CROP = 2
+    RESIZE = 3
+
+
+def transform_images_size(album_path, target_path, width=640,height=480, fx=0.5,fy=0.5, mode=ResizeMode.RESIZE):
+    target = f"{target_path}"
+    dest = get_appropriate_incremental_name("resize",target)
+    os.makedirs(dest)
+    
+
+    print("----- Resize -----")
+    print(f"Created folder {dest} for image resizing results.")
+    print(f"Mode {mode}")
+    print(f"Width : {width}, Height : {height}, Fx : {fx}, Fy : {fy}")
+
+    all_image_paths = find_images(album_path)
+    for image_path in tqdm(all_image_paths, total=len(all_image_paths)):
+        img = cv2.imread(image_path)
+
+        if mode == ResizeMode.SCALE:
+            resized_img = cv2.resize(img, None, fx=fx, fy=fy, interpolation=cv2.INTER_LINEAR) 
+        elif mode == ResizeMode.CROP:
+            h, w = img.shape[:2]
+            startx = w//2 - (width//2)
+            starty = h//2 - (height//2)
+            endx = startx + width
+            endy = starty + height
+            resized_img = img[starty:endy, startx:endx]
+        elif mode == ResizeMode.RESIZE:
+            resized_img = cv2.resize(img, (width, height))
+        else:
+            print("WARNING: Unsupported transform mode used!")
+            return
+        
+        dest_path = get_appropriate_incremental_name(image_path,dest)
+        cv2.imwrite(dest_path, resized_img)
+    return dest 
 
 def find_images(directory):
     image_extensions = [".jpg", ".jpeg", ".png", ".gif"]
@@ -25,6 +68,7 @@ def get_appropriate_incremental_name(src_file, dest_folder):
         i += 1
         dest_file = os.path.join(dest_folder, f"{root}_{i}{ext}")
     return dest_file
+
 
 def save_individual_images(base_path, df, person, ignore_list=[]):
     print(f"Will create folder {person} in {base_path} and copy images there.")
@@ -55,7 +99,7 @@ def save_all_individual_from_album(base_path, df, allow_copies=False):
             if np.isnan(person):
                 person = None
         except Exception:
-            pass  
+            pass 
 
         save_individual_images(base_path, df, person, ignore_list)
         if not allow_copies:  
@@ -85,9 +129,7 @@ def find_duplicates(rootdir):
                 with open(os.path.join(subdir, file), "rb") as f:
                     hash = hashlib.md5(f.read()).hexdigest()
                 if hash in hash_dict:
-                    print(
-                        f"Duplicate images found: {os.path.join(subdir, file)} and {hash_dict[hash]}"
-                    )
+                    print(f"Duplicate images found: {os.path.join(subdir, file)} and {hash_dict[hash]}")
                     duplicates.append([os.path.join(subdir, file), hash_dict[hash]])
                 else:
                     hash_dict[hash] = os.path.join(subdir, file)
