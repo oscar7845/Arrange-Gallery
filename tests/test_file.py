@@ -4,6 +4,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
+from utils import ai
 from utils import file
 from utils import db
 from utils import run
@@ -69,6 +70,8 @@ def test_file_handle_functions():
 
     file.save_all_individual_from_album(target_path, df, allow_copies=False)
     assert len(file.find_images(target_path)) == len(file.find_images(album_path))
+
+    ai.create_face_collage(df,["Unknown11"],target_path, (1920,1080))
 
     try:
         if os.path.exists(target_path):
