@@ -8,17 +8,25 @@ import cv2
 
 from enum import Enum
 
+
 class ResizeMode(Enum):
     SCALE = 1
     CROP = 2
     RESIZE = 3
 
 
-def transform_images_size(album_path, target_path, width=640,height=480, fx=0.5,fy=0.5, mode=ResizeMode.RESIZE):
+def transform_images_size(
+    album_path,
+    target_path,
+    width=640,
+    height=480,
+    fx=0.5,
+    fy=0.5,
+    mode=ResizeMode.RESIZE,
+):
     target = f"{target_path}"
-    dest = get_appropriate_incremental_name("resize",target)
+    dest = get_appropriate_incremental_name("resize", target)
     os.makedirs(dest)
-    
 
     print("----- Album Resizing -----")
     print(f"Created folder {dest} for image resizing results.")
@@ -30,11 +38,13 @@ def transform_images_size(album_path, target_path, width=640,height=480, fx=0.5,
         img = cv2.imread(image_path)
 
         if mode == ResizeMode.SCALE:
-            resized_img = cv2.resize(img, None, fx=fx, fy=fy, interpolation=cv2.INTER_LINEAR) 
+            resized_img = cv2.resize(
+                img, None, fx=fx, fy=fy, interpolation=cv2.INTER_LINEAR
+            )
         elif mode == ResizeMode.CROP:
             h, w = img.shape[:2]
-            startx = w//2 - (width//2)
-            starty = h//2 - (height//2)
+            startx = w // 2 - (width // 2)
+            starty = h // 2 - (height // 2)
             endx = startx + width
             endy = starty + height
             resized_img = img[starty:endy, startx:endx]
@@ -43,10 +53,10 @@ def transform_images_size(album_path, target_path, width=640,height=480, fx=0.5,
         else:
             print("WARNING: Unsupported transform mode used!")
             return
-        
-        dest_path = get_appropriate_incremental_name(image_path,dest)
+
+        dest_path = get_appropriate_incremental_name(image_path, dest)
         cv2.imwrite(dest_path, resized_img)
-    return dest 
+    return dest
 
 def find_images(directory):
     image_extensions = [".jpg", ".jpeg", ".png", ".gif"]
@@ -94,12 +104,12 @@ def save_all_individual_from_album(base_path, df, allow_copies=False):
     print(f"Will now copy all files into individual folders. allow_copies={allow_copies}")
     ignore_list = []
 
-    for i,person in tqdm(np.ndenumerate(persons),total=len(persons)):
+    for i, person in tqdm(np.ndenumerate(persons), total=len(persons)):
         try:
             if np.isnan(person):
                 person = None
         except Exception:
-            pass 
+            pass  
 
         save_individual_images(base_path, df, person, ignore_list)
         if not allow_copies:  
@@ -129,7 +139,9 @@ def find_duplicates(rootdir):
                 with open(os.path.join(subdir, file), "rb") as f:
                     hash = hashlib.md5(f.read()).hexdigest()
                 if hash in hash_dict:
-                    print(f"Duplicate images found: {os.path.join(subdir, file)} and {hash_dict[hash]}")
+                    print(
+                        f"Duplicate images found: {os.path.join(subdir, file)} and {hash_dict[hash]}"
+                    )
                     duplicates.append([os.path.join(subdir, file), hash_dict[hash]])
                 else:
                     hash_dict[hash] = os.path.join(subdir, file)

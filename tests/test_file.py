@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
 from utils import file
@@ -10,16 +11,16 @@ import os
 import pandas as pd
 import shutil
 
+
 def test_file_save_load():
-    
     csv_storage_path = "./data/tmp/fr_db.csv"
-    df = pd.DataFrame(index=range(0), columns=['col1', 'col2'])
+    df = pd.DataFrame(index=range(0), columns=["col1", "col2"])
     file.save_csv(csv_storage_path, df)
 
-    assert(os.path.exists(csv_storage_path))
+    assert os.path.exists(csv_storage_path)
 
-    _df = db.load(csv_storage_path) 
-    assert(len(df) == len(_df)) 
+    _df = db.load(csv_storage_path)  
+    assert len(df) == len(_df)  
 
 
 def test_file_handle_functions():
@@ -44,25 +45,33 @@ def test_file_handle_functions():
 
     target_path = "./target/"
 
-    if os.path.exists(target_path):
-        shutil.rmtree(target_path)
+    try:
+        if os.path.exists(target_path):
+            shutil.rmtree(target_path)
+    except OSError:
+        pass 
 
-    file.save_all_individual_from_album(target_path,df, allow_copies=True)
-    assert(len(file.find_images(target_path)) == len(df))
-    
+    file.save_all_individual_from_album(target_path, df, allow_copies=True)
+    assert len(file.find_images(target_path)) == len(df)
 
     duplicates = file.find_duplicates(target_path)
-    assert(len(duplicates) == 13)
+    assert len(duplicates) == 13
 
     file.remove_duplicates(duplicates)
     duplicates = file.find_duplicates(target_path)
-    assert(len(duplicates) == 0)
+    assert len(duplicates) == 0
 
-    if os.path.exists(target_path):
-        shutil.rmtree(target_path)
+    try:
+        if os.path.exists(target_path):
+            shutil.rmtree(target_path)
+    except OSError:
+        pass 
 
-    file.save_all_individual_from_album(target_path,df, allow_copies=False)
-    assert(len(file.find_images(target_path)) == len(file.find_images(album_path)))
-    
-    if os.path.exists(target_path):
-        shutil.rmtree(target_path)
+    file.save_all_individual_from_album(target_path, df, allow_copies=False)
+    assert len(file.find_images(target_path)) == len(file.find_images(album_path))
+
+    try:
+        if os.path.exists(target_path):
+            shutil.rmtree(target_path)
+    except OSError:
+        pass 

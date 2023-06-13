@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
 from utils import run
@@ -26,4 +27,4 @@ def test_face_recognition_integration():
         checkpoint_path2=checkpoint_path2,
     )
 
-    assert(len(df) == 18)
+    assert len(df) == 18 

@@ -19,8 +19,7 @@ if __name__ == "__main__":
     csv_storage_path = "./data/tmp/fr_db.csv"
 
     load_df = False
-    df_path= "./data/tmp/fr_db.csv"
-
+    df_path = "./data/tmp/fr_db.csv"
 
     if not load_df:
         checkpoint_path1 = "./data/tmp/detect_faces_checkpoint.pkl"
@@ -42,17 +41,20 @@ if __name__ == "__main__":
         if backup_csv:
             file.backup(csv_storage_path, backup_folder)
 
-    else: 
+    else:
         df = db.load_dataframe(df_path)
 
     # Pretty print (DataFrame):
     # print(tabulate(df, headers='keys', tablefmt='psql'))
     print(df)
 
-    target_path = "./target/"
-    if os.path.exists(target_path):
-        shutil.rmtree(target_path)
+    try:
+        target_path = "./target/"
+        if os.path.exists(target_path):
+            shutil.rmtree(target_path)
+    except OSError:
+        pass  
 
-    file.save_all_individual_from_album(target_path,df, allow_copies=False) 
+    file.save_all_individual_from_album(target_path, df, allow_copies=False)
 
     # TODO: test on larger dataset

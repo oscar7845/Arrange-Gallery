@@ -35,7 +35,7 @@ def detect_persons(
 
         face_encoding = row["face_encoding"]
 
-        if face_encoding is None:
+        if face_encoding is None: 
             continue
 
         matches = face_recognition.compare_faces(
@@ -55,7 +55,7 @@ def detect_persons(
             print(f"  Checkpoint - {i+1}/{len(df)}")
             print()
 
-            os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)    
+            os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)
             with open(checkpoint_path, "wb+") as f:
                 pickle.dump((df, i, unknown_counter), f)
 
@@ -77,11 +77,12 @@ def detect_all_faces_in_album(
         checkpoint_path=checkpoint_path,
     )
 
+
 def multi_process_detect_faces(image_path):
     image = face_recognition.load_image_file(image_path)
     face_locations = face_recognition.face_locations(
         image, model="hog"
-    ) 
+    )  
     face_encodings = face_recognition.face_encodings(image, face_locations)
 
     df = db.create(["image_path", "box", "face_encoding", "id"])
@@ -159,7 +160,7 @@ def multi_process_detect_all_faces_in_album(
             print()
             print(f"  Checkpoint - {j+1}/{len(splitted_paths)}")
             print()
-            
+
             os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)
             with open(checkpoint_path, "wb+") as f:
                 pickle.dump((dfss, j + 1), f)

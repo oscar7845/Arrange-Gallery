@@ -1,6 +1,8 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 from utils import file
 import os
@@ -19,8 +21,12 @@ if __name__ == "__main__":
     fx = 0.5
     fy = 0.5
 
-    file.transform_images_size(album_path, target_path, width,height,fx,fy,file.ResizeMode.CROP)
-    file.transform_images_size(album_path, target_path, width,height,fx,fy,file.ResizeMode.RESIZE)
-    file.transform_images_size(album_path, target_path, width,height,fx,fy,file.ResizeMode.SCALE)
-
-   
+    file.transform_images_size(
+        album_path, target_path, width, height, fx, fy, file.ResizeMode.CROP
+    )
+    file.transform_images_size(
+        album_path, target_path, width, height, fx, fy, file.ResizeMode.RESIZE
+    )
+    file.transform_images_size(
+        album_path, target_path, width, height, fx, fy, file.ResizeMode.SCALE
+    )
