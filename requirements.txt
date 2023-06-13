@@ -8,3 +8,4 @@ tqdm==4.65.0
 #tensorflow
 black==23.3.0 # reformatting code
 pytest==7.3.1
+pyfiglet==0.8.post1 

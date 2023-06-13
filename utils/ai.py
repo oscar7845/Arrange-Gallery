@@ -7,6 +7,7 @@ from multiprocessing import Pool
 from tqdm import tqdm
 import pickle
 import itertools
+import os
 
 def detect_persons(
     df,
@@ -51,9 +52,10 @@ def detect_persons(
         if i % checkpoint_interval == 0 and i != 0:
             print()
             print()
-            print(f"Checkpoint - {i+1}/{len(df)}")
+            print(f"  Checkpoint - {i+1}/{len(df)}")
             print()
-            # create checkpoint
+
+            os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)    
             with open(checkpoint_path, "wb+") as f:
                 pickle.dump((df, i, unknown_counter), f)
 
@@ -155,8 +157,10 @@ def multi_process_detect_all_faces_in_album(
 
             print()
             print()
-            print(f"Checkpoint - {j+1}/{len(splitted_paths)}")
+            print(f"  Checkpoint - {j+1}/{len(splitted_paths)}")
             print()
+            
+            os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)
             with open(checkpoint_path, "wb+") as f:
                 pickle.dump((dfss, j + 1), f)
 
@@ -166,7 +170,7 @@ def multi_process_detect_all_faces_in_album(
     try:
         df = pd.concat(dfss, ignore_index=True)
     except ValueError as ve:
-        pass 
+        pass  
 
     print("")
     print(" ---- Statistics -----")

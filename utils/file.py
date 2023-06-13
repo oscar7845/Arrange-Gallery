@@ -56,6 +56,7 @@ def save_all_individual_from_album(base_path, df, allow_copies=False):
                 person = None
         except Exception:
             pass  
+
         save_individual_images(base_path, df, person, ignore_list)
         if not allow_copies:  
             ignore_list.extend(db.get_all_images_of_individual(df, person))
@@ -84,7 +85,9 @@ def find_duplicates(rootdir):
                 with open(os.path.join(subdir, file), "rb") as f:
                     hash = hashlib.md5(f.read()).hexdigest()
                 if hash in hash_dict:
-                    print(f"Duplicate images found: {os.path.join(subdir, file)} and {hash_dict[hash]}")
+                    print(
+                        f"Duplicate images found: {os.path.join(subdir, file)} and {hash_dict[hash]}"
+                    )
                     duplicates.append([os.path.join(subdir, file), hash_dict[hash]])
                 else:
                     hash_dict[hash] = os.path.join(subdir, file)
