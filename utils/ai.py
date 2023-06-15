@@ -10,21 +10,21 @@ import itertools
 import os
 import cv2
 
+
 def create_face_collage(df, persons, target_path, resolution):
-    
     print("----- Generate Collage -----")
     cropped_faces = []
     for person in persons:
-        personal_df = db.get_all_occurrences_of_individual(df,person)
+        personal_df = db.get_all_occurrences_of_individual(df, person)
 
-        for _,row in personal_df.iterrows():
+        for _, row in personal_df.iterrows():
             img = cv2.imread(row["image_path"])
             top, right, bottom, left = row["box"]
             width = right - left
             height = bottom - top
             x = left
             y = top
-            cropped_faces.append(img[y:y+height, x:x+width])
+            cropped_faces.append(img[y : y + height, x : x + width])
 
     merged_image = merge_images(cropped_faces, resolution[0], resolution[1])
     if merged_image is None:
@@ -32,15 +32,16 @@ def create_face_collage(df, persons, target_path, resolution):
         return None
 
     os.makedirs(target_path, exist_ok=True)
-    dest= file.get_appropriate_incremental_name("face_collage.png",target_path)
-    cv2.imwrite(dest,merged_image)
+    dest = file.get_appropriate_incremental_name("face_collage.png", target_path)
+    cv2.imwrite(dest, merged_image)
     print(f"Saved collage at {dest}.")
-    
+
     return merged_image
 
 
-def merge_images(images, output_width, output_height):
-
+def merge_images(
+    images, output_width, output_height
+):  
     if len(images) == 0:
         return None
 
@@ -66,7 +67,7 @@ def merge_images(images, output_width, output_height):
         x = col_idx * subimage_width
         y = row_idx * subimage_height
 
-        output_image[y:y+subimage_height, x:x+subimage_width, :] = img_resized
+        output_image[y : y + subimage_height, x : x + subimage_width, :] = img_resized
 
     return output_image
 

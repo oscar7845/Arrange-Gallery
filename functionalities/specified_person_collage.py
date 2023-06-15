@@ -55,4 +55,4 @@ if __name__ == "__main__":
     # print(tabulate(df, headers='keys', tablefmt='psql'))
     print(df)
 
-    collage = ai.create_face_collage(df,["Unknown11"],target_path, (1920,1080))
+    collage = ai.create_face_collage(df, ["Unknown11"], target_path, (1920, 1080))

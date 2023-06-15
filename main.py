@@ -10,6 +10,7 @@ if __name__ == "__main__":
     f = Figlet(font="slant")
     print(f.renderText("text"))
 
+    # Path to the album root folder
     album_path = "./images/"
 
     backup_checkpoints = True
@@ -36,6 +37,7 @@ if __name__ == "__main__":
             checkpoint_path2=checkpoint_path2,
         )
 
+        # Save to CSV file
         file.save_csv(csv_storage_path, df)
 
         if backup_csv:
@@ -48,13 +50,15 @@ if __name__ == "__main__":
     # print(tabulate(df, headers='keys', tablefmt='psql'))
     print(df)
 
+    # Remove current target
     try:
         target_path = "./target/"
         if os.path.exists(target_path):
             shutil.rmtree(target_path)
     except OSError:
-        pass  
+        pass 
 
+    # Create new target
     file.save_all_individual_from_album(target_path, df, allow_copies=False)
 
     # TODO: test on larger dataset
