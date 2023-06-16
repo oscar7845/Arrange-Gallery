@@ -126,19 +126,6 @@ def detect_persons(
 
     return df
 
-def detect_all_faces_in_album(
-    path,
-    workers=8,
-    checkpoint_interval=50,
-    checkpoint_path="./data/tmp/detect_faces_checkpoint.pkl",
-):
-    return multi_process_detect_all_faces_in_album(
-        path,
-        workers=workers,
-        checkpoint_interval=checkpoint_interval,
-        checkpoint_path=checkpoint_path,
-    )
-
 
 def multi_process_detect_faces(image_path):
     image = face_recognition.load_image_file(image_path)

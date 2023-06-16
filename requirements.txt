@@ -9,3 +9,10 @@ tqdm==4.65.0
 black==23.3.0 # reformatting code
 pytest==7.3.1
 pyfiglet==0.8.post1 
+
+# Additional functionalities
+scikit-learn==1.2.2
+pytesseract==0.3.10
+torch==2.0.1
+torchvision==0.15.2
+scikit-image==0.20.0

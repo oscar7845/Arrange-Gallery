@@ -13,7 +13,7 @@ def face_recognition_on_album(
     checkpoint_path1="./data/tmp/detect_faces_checkpoint.pkl",
     checkpoint_path2="./data/tmp/compare_person_checkpoint.pkl",
 ):
-    df = ai.detect_all_faces_in_album(
+    df = ai.multi_process_detect_all_faces_in_album(
         image_path,
         workers=workers,
         checkpoint_interval=checkpoint_interval,
