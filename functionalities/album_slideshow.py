@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from utils.features import Level
 from pyfiglet import Figlet
 from utils import features
+import shutil
 
 if __name__ == "__main__":
     f = Figlet(font="slant")
@@ -15,61 +16,71 @@ if __name__ == "__main__":
     target_path = "./target/"
 
 
-    color_dominance = (0, 0, 0)  # bgr, check for color dominant occurrences
-    color_diversity = Level.LOW  # high large diversity
-    color_warmth = 0  # low = cold, high = warm
-    image_intensity = Level.LOW
-    image_contrast = Level.LOW
+    color_dominance = None  # bgr, check for color dominant occurrences
+    color_diversity = None  # high large diversity
+    color_warmth = None  # low = cold, high = warm
+    image_intensity = None
+    image_contrast = None
 
-    min_image_quality = Level.LOW
+    min_image_quality = None
     min_image_resolution = (0, 0)
     max_image_resolution = (4000, 4000)
-    image_file_formats = [".jpg", ".png", ".jpeg", ".gif"]
+    image_file_formats = None # List of formats
     aspect_ratio_range = (0, 2)
 
-    text = Level.LOW
-    
-    image_smooth_edges = Level.LOW
+    text_amount = None
+    text = None
 
-    image_feeling = "calm"
+    image_smooth_edges = None
 
-    environment = "inside"  # "outside"
+    image_feeling = None # list of feelings
 
-    sift_features = Level.LOW
+    environment = None  # "outside"
 
-    people = Level.NONE
+    sift_features = None
+
+    people = None 
 
     allowed_objects = None  # create a list of strings of object names
     not_allowed_objects = None
 
-    workers = 8
+    workers = 1
     checkpoint_path = "./data/tmp/slideshow_checkpoint.pkl"
     csv_path = "./data/tmp/ss_db.csv"
     checkpoint_interval = 50
 
+    try:
+        target_path = "./target/"
+        if os.path.exists(target_path):
+            shutil.rmtree(target_path)
+    except OSError:
+        pass  
+
+
     features.create_slideshow(
-        album_path,
-        target_path,
-        workers,
-        checkpoint_path,
-        csv_path,
-        checkpoint_interval,
-        color_dominance,
-        color_diversity,
-        color_warmth,
-        image_intensity,
-        image_contrast,
-        min_image_quality,
-        min_image_resolution,
-        max_image_resolution,
-        image_file_formats,
-        aspect_ratio_range,
-        text,
-        image_smooth_edges,
-        image_feeling,
-        environment,
-        sift_features,
-        people,
-        allowed_objects,
-        not_allowed_objects,
+        album_path=album_path,
+        target_path=target_path,
+        workers=workers,
+        checkpoint_path=checkpoint_path,
+        csv_path=csv_path,
+        checkpoint_interval=checkpoint_interval,
+        color_dominance=color_dominance,
+        color_diversity=color_diversity,
+        color_warmth=color_warmth,
+        image_intensity=image_intensity,
+        image_contrast=image_contrast,
+        min_image_quality=min_image_quality,
+        min_image_resolution=min_image_resolution,
+        max_image_resolution=max_image_resolution,
+        image_file_formats=image_file_formats,
+        aspect_ratio_range=aspect_ratio_range,
+        text_amount=text_amount,
+        text=text,
+        image_smooth_edges=image_smooth_edges,
+        image_feeling=image_feeling,
+        environment=environment,
+        sift_features=sift_features,
+        people=people,
+        allowed_objects=allowed_objects,
+        not_allowed_objects=not_allowed_objects,
     )

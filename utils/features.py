@@ -4,6 +4,7 @@ import numpy as np
 from . import db
 from . import file
 
+import shutil
 import numpy as np
 import pickle
 from multiprocessing import Pool
@@ -36,6 +37,9 @@ class Level(Enum):
     MODERATE = 2
     HIGH = 3
 
+class Heat(Enum):
+    COLD = 0
+    WARM = 1
 
 import cv2
 import numpy as np
@@ -478,7 +482,6 @@ def generate_slideshow_dataframe(
             print()
             print(f"  Checkpoint - {j+1}/{len(splitted_paths)}")
             print()
-
             os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)
             with open(checkpoint_path, "wb+") as f:
                 pickle.dump((dfss, j + 1), f)
@@ -507,29 +510,30 @@ def create_slideshow(
     csv_path="./data/tmp/ss_db.csv",
     checkpoint_interval=50,
 
-    color_dominance=(0, 0, 0),  # bgr, check for color dominant occurrences
-    color_diversity=Level.LOW,  # high large diversity
-    color_warmth=0,  # low = cold, high = warm
-    image_intensity=Level.LOW,
-    image_contrast=Level.LOW,
+    color_dominance=None,  # bgr, check for color dominant occurrences
+    color_diversity=None,  # high large diversity
+    color_warmth=None,  # low = cold, high = warm
+    image_intensity=None,
+    image_contrast=None,
 
-    min_image_quality=Level.LOW,
+    min_image_quality=None,
     min_image_resolution=(0, 0),
     max_image_resolution=(4000, 4000),
-    image_file_formats=[".jpg", ".png", ".jpeg", ".gif"],
-    aspect_ratio_range=(0, 2),
+    image_file_formats=None,
+    aspect_ratio_range=None,
 
-    text=Level.LOW,
+    text_amount=None,
+    text=None,
 
-    image_smooth_edges=Level.LOW,
+    image_smooth_edges=None,
 
-    image_feeling="calm",
+    image_feeling=None,
 
-    environment="inside",  # "outside"
+    environment=None,  # "outside"
 
-    sift_features=Level.LOW,
+    sift_features=None,
 
-    people=Level.NONE,
+    people=None,
 
     allowed_objects=None,  # None, allows all
     not_allowed_objects=None,  # None, ignores None
@@ -563,6 +567,7 @@ def create_slideshow(
         max_image_resolution,
         image_file_formats,
         aspect_ratio_range,
+        text_amount,
         text,
         image_smooth_edges,
         image_feeling,
@@ -572,41 +577,198 @@ def create_slideshow(
         allowed_objects,
         not_allowed_objects,
     )
-    return None
+    return df
 
+import math
+
+def color_distance(color1, color2):
+    r_diff = color1[0] - color2[0]
+    g_diff = color1[1] - color2[1]
+    b_diff = color1[2] - color2[2]
+    return math.sqrt(r_diff**2 + g_diff**2 + b_diff**2)
 
 def create_slideshow_from_df_and_filters(
     df,
     target_path,
-    color_dominance=(0, 0, 0),  # bgr, check for color dominant occurrences
-    color_diversity=Level.LOW,  # high large diversity
-    color_warmth=0,  # low = cold, high = warm
-    image_intensity=Level.LOW,
-    image_contrast=Level.LOW,
+    color_dominance=None,  # bgr, check for color dominant occurrences
+    color_diversity=None,  # high large diversity
+    color_warmth=None,  # low = cold, high = warm
+    image_intensity=None,
+    image_contrast=None,
 
-    min_image_quality=Level.LOW,
+    min_image_quality=None,
     min_image_resolution=(0, 0),
     max_image_resolution=(4000, 4000),
-    image_file_formats=[".jpg", ".png", ".jpeg", ".gif"],
-    aspect_ratio_range=(0, 2),
+    image_file_formats=None,
+    aspect_ratio_range=(0, 4),
 
-    text=Level.LOW,
+    text_amount=None,
+    text=None,
 
-    image_smooth_edges=Level.LOW,
+    image_smooth_edges=None,
 
-    image_feeling="calm",
+    image_feeling=None,
 
-    environment="inside",  # "outside"
+    environment=None,  # "outside"
 
-    sift_features=Level.LOW,
+    sift_features=None,
 
-    people=Level.NONE,
+    people=None,
 
     allowed_objects=None,  # None, allows all
     not_allowed_objects=None,  # None, ignores None
 ):
-    pass
+    print("----- Creating Slideshow -----")
+    
+    dest = file.get_appropriate_incremental_name("slideshow",target_path)
+    os.makedirs(dest, exist_ok=True)
 
+    slide_show_image_paths = []
+    for _, row in df.iterrows():
+        add = True
+
+        if color_dominance is not None:
+            if color_distance(row["color_dominance"], color_dominance) > 100:
+                continue
+            
+        if color_diversity is not None:
+            if color_diversity == Level.LOW:
+                if row["color_diversity"] >= 0.2:
+                    continue
+            elif color_diversity == Level.MODERATE:
+                if row["color_diversity"] < 0.2 or row["color_diversity"] > 0.5:
+                    continue
+            elif color_diversity == Level.HIGH:
+                if row["color_diversity"] <= 0.5:
+                    continue
+
+        if color_warmth is not None:
+            if color_warmth == Heat.COLD:
+                if row["color_warmth"] > 0.5:
+                    continue
+            elif color_warmth == Heat.WARM:
+                if row["color_warmth"] < 0.5:
+                    continue
+
+        if image_intensity is not None:
+            if image_intensity == Level.LOW:
+                if row["image_intensity"] >= 0.2:
+                    continue
+            elif image_intensity == Level.MODERATE:
+                if row["image_intensity"] < 0.2 or row["image_intensity"] > 0.5:
+                    continue
+            elif image_intensity == Level.HIGH:
+                if row["image_intensity"] <= 0.5:
+                    continue
+
+        if image_contrast is not None:
+            if image_contrast == Level.LOW:
+                if row["image_contrast"] >= 0.2:
+                    continue
+            elif image_contrast == Level.MODERATE:
+                if row["image_contrast"] < 0.2 or row["image_contrast"] > 0.5:
+                    continue
+            elif image_contrast == Level.HIGH:
+                if row["image_contrast"] <= 0.5:
+                    continue
+
+        if min_image_quality is not None:
+            if min_image_quality == Level.LOW:
+                if row["image_quality"] >= 0.2:
+                    continue
+            elif min_image_quality == Level.MODERATE:
+                if row["image_quality"] < 0.2 or row["image_quality"] > 0.5:
+                    continue
+            elif min_image_quality == Level.HIGH:
+                if row["image_quality"] <= 0.5:
+                    continue
+
+        if min_image_resolution is not None:
+            if min_image_resolution[0] > row["image_resolution"][0] or min_image_resolution[1] > row["image_resolution"][1]:
+                continue
+        
+        if max_image_resolution is not None:
+            if max_image_resolution[0] < row["image_resolution"][0] or max_image_resolution[1] < row["image_resolution"][1]:
+                continue
+
+        if image_file_formats is not None:
+            if row["image_file_format"] not in image_file_formats:
+                continue
+        
+        if aspect_ratio_range is not None:
+            if aspect_ratio_range[0] < row["aspect_ratio_range"]  < aspect_ratio_range[1]:
+                continue        
+
+        if text_amount is not None:
+            if text_amount > len(row["text"]):
+                continue
+
+        if text is not None:
+            for word in text:
+                if word not in row["text"]:
+                    continue
+
+        if image_smooth_edges is not None:
+            if image_smooth_edges == Level.LOW:
+                if row["image_smooth_edges"] >= 0.2:
+                    continue
+            elif image_smooth_edges == Level.MODERATE:
+                if row["image_smooth_edges"] < 0.2 or row["image_smooth_edges"] > 0.5:
+                    continue
+            elif image_smooth_edges == Level.HIGH:
+                if row["image_smooth_edges"] <= 0.5:
+                    continue
+
+        if image_feeling is not None:
+            for feel in image_feeling:
+                if feel not in row["image_feeling"]:
+                    continue
+        
+        if environment is not None:
+            if row["environment"] not in environment:
+                continue
+
+        if sift_features is not None:
+            if sift_features == Level.LOW:
+                if row["sift_features"] >= 100:
+                    continue
+            elif sift_features == Level.MODERATE:
+                if row["sift_features"] < 100 or row["sift_features"] > 200:
+                    continue
+            elif sift_features == Level.HIGH:
+                if row["sift_features"] <= 200:
+                    continue
+
+        if people is not None:
+            if people == Level.LOW:
+                if row["people"] >= 2:
+                    continue
+            elif people == Level.MODERATE:
+                if row["people"] < 2 or row["people"] > 5:
+                    continue
+            elif people == Level.HIGH:
+                if row["people"] <= 5:
+                    continue
+
+        if allowed_objects is not None:
+            for obj in allowed_objects:
+                if obj not in row["objects"]:
+                    continue
+
+        if not_allowed_objects is not None:
+            for obj in not_allowed_objects:
+                if obj in row["objects"]:
+                    continue
+        
+        slide_show_image_paths.append(row["image_path"])
+            
+    print(f"Amount of images in slideshow: {len(slide_show_image_paths)}")
+    
+
+    for image in slide_show_image_paths:
+        dest_path = file.get_appropriate_incremental_name(image, dest)
+        shutil.copy(image, dest_path)
+        print(f"Copied file to {dest_path}")
 
 def create_face_collage(df, persons, target_path, resolution):
     print("----- Generate Collage -----")
