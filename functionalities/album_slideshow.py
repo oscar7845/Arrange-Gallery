@@ -3,9 +3,9 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from utils.features import Level
+from utils.functionalities import Level
 from pyfiglet import Figlet
-from utils import features
+from utils import functionalities
 import shutil
 
 if __name__ == "__main__":
@@ -15,32 +15,42 @@ if __name__ == "__main__":
     album_path = "./images/"
     target_path = "./target/"
 
+    # Slideshow filters
 
+    # Color analysis
     color_dominance = None  # bgr, check for color dominant occurrences
     color_diversity = None  # high large diversity
     color_warmth = None  # low = cold, high = warm
     image_intensity = None
     image_contrast = None
 
+    # Image file specific
     min_image_quality = None
     min_image_resolution = (0, 0)
     max_image_resolution = (4000, 4000)
-    image_file_formats = None # List of formats
+    image_file_formats = None  # List of formats
     aspect_ratio_range = (0, 2)
 
+    # Text detection
     text_amount = None
     text = None
 
+    # Corner detection
     image_smooth_edges = None
 
-    image_feeling = None # list of feelings
+    # Sentient Analysis
+    image_feeling = None  # list of feelings
 
+    # Environment Analysis
     environment = None  # "outside"
 
+    # Feature extraction
     sift_features = None
 
-    people = None 
-
+    # Face detection
+    people = None
+    
+    # Object detection
     allowed_objects = None  # create a list of strings of object names
     not_allowed_objects = None
 
@@ -49,6 +59,7 @@ if __name__ == "__main__":
     csv_path = "./data/tmp/ss_db.csv"
     checkpoint_interval = 50
 
+    # Remove current target
     try:
         target_path = "./target/"
         if os.path.exists(target_path):
@@ -56,8 +67,7 @@ if __name__ == "__main__":
     except OSError:
         pass  
 
-
-    features.create_slideshow(
+    functionalities.create_slideshow(
         album_path=album_path,
         target_path=target_path,
         workers=workers,

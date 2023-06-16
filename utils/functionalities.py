@@ -37,9 +37,11 @@ class Level(Enum):
     MODERATE = 2
     HIGH = 3
 
+
 class Heat(Enum):
     COLD = 0
     WARM = 1
+
 
 import cv2
 import numpy as np
@@ -57,13 +59,16 @@ def detect_environment_from_image(image):
         },
         "Rural": {"color_hist": [0.2, 0.4, 0.3, 0.1], "glcm": [0.3, 0.3, 0.2, 0.2]},
         "Coastal": {"color_hist": [0.1, 0.2, 0.6, 0.1], "glcm": [0.4, 0.1, 0.1, 0.4]}
+        # Add more environment categories and their corresponding features
     }
 
+    # Calculate color histogram
     hist = cv2.calcHist([image], [0, 1, 2], None, [4, 1, 1], [0, 256, 0, 256, 0, 256])
     hist = cv2.normalize(hist, hist).flatten()
 
+    # Calculate texture features using gray image
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray = cv2.resize(gray, (256, 256))  # Resize the image if needed
+    gray = cv2.resize(gray, (256, 256))  # Resize image if needed
 
     glcm = graycomatrix(
         gray, distances=[1], angles=[0], levels=256, symmetric=True, normed=True
@@ -71,6 +76,7 @@ def detect_environment_from_image(image):
     glcm_flat = glcm.flatten()
     glcm = glcm_flat[:4].astype(np.float32)
 
+    # Calculate similarity scores between image features and environment features
     scores = {}
 
     for environment, features in environments.items():
@@ -84,6 +90,7 @@ def detect_environment_from_image(image):
         )
         scores[environment] = color_hist_sim + glcm_sim
 
+    # Get environment with highest similarity score
     max_score = max(scores.values())
     detected_environment = [env for env, score in scores.items() if score == max_score][
         0
@@ -93,6 +100,7 @@ def detect_environment_from_image(image):
 
 
 def detect_feelings_from_image_pixel_array(pixels):
+    # image feeling, return top 3
     avg_color = np.mean(pixels, axis=0)
     emotions = {
         "Angry": [(0, 0, 0), (127, 127, 127)],
@@ -158,6 +166,7 @@ def detect_feelings_from_image_pixel_array(pixels):
         "Skeptical": [(128, 0, 0), (255, 127, 127)],
     }
 
+    # Compare average RGB values with emotion color ranges
     image_feelings = []
     for emotion, (lower, upper) in emotions.items():
         if np.all(lower <= avg_color) and np.all(avg_color <= upper):
@@ -167,6 +176,7 @@ def detect_feelings_from_image_pixel_array(pixels):
 
 
 def object_detection_from_image(image, min_score=0.6):
+    # Faster RCNN resnet 50 using pytorch, will download cache model first run. trained on COCO dataset.
     COCO_OBJECT_CATEGORIES = [
         "__background__",
         "person",
@@ -271,6 +281,7 @@ def object_detection_from_image(image, min_score=0.6):
     detected_objects_labels = predictions[0]["labels"].tolist()
     detected_objects_scores = predictions[0]["scores"].tolist()
 
+    # Convert labels to object names and combine with scores
     detected_object_names = [
         COCO_OBJECT_CATEGORIES[label] for label in detected_objects_labels
     ]
@@ -285,6 +296,7 @@ def object_detection_from_image(image, min_score=0.6):
 
 
 def multi_process_slideshow(image_path, debug=False):
+    #Detects faces and face encoding using (HOG default) + Linear SVM face detection.
     df = db.create(
         [
             "image_path",
@@ -310,17 +322,20 @@ def multi_process_slideshow(image_path, debug=False):
     if debug:
         print(f"Image: {image_path}")
 
+    # Read image
     image = cv2.imread(image_path)
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     pixels = image_rgb.reshape(-1, 3)
 
+    # color_dominance
     histogram = np.bincount(pixels[:, 0])
     dominant_color = np.argmax(histogram)
 
     if debug:
         print(f"DominantColor: {dominant_color}")
 
+    # color_diversity
     kmeans = KMeans(n_clusters=7, n_init="auto")  # set amount of colors to check
     kmeans.fit(pixels)
     labels = kmeans.labels_
@@ -330,18 +345,21 @@ def multi_process_slideshow(image_path, debug=False):
     if debug:
         print(f"DiversityColor: {diversity_color}")
 
+    # color_warmth
     avg_color = np.mean(pixels, axis=0)
     red, green, blue = avg_color
     color_warmth = (red - blue) / (red + green + blue)
 
+    # image_intensity
     intensity = np.mean(gray_image)
-
+    # image contrast
     contrast = np.std(gray_image)
 
     if debug:
         print(f"ImageIntensity: {intensity}")
         print(f"ImageContrast: {contrast}")
 
+    # image_quality
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     saturation = hsv_image[:, :, 1].mean()
     laplacian = cv2.Laplacian(gray_image, cv2.CV_64F).var()
@@ -350,22 +368,26 @@ def multi_process_slideshow(image_path, debug=False):
     if debug:
         print(f"ImageQuality: {quality}")
 
+    # image_resolution
     height, width, _ = image.shape
 
     if debug:
         print(f"Resolution: {width}x{height}")
 
+    # image_file_format
     file_extension = os.path.splitext(image_path)[1]
     image_format = file_extension[1:].upper()
 
     if debug:
         print(f"Format: {image_format}")
 
+    # aspect ratio
     aspect_ratio = width / height
 
     if debug:
         print(f"AspectRatio: {aspect_ratio}")
 
+    # text
     try:
         text = pytesseract.image_to_string(image)
         if debug:
@@ -373,6 +395,7 @@ def multi_process_slideshow(image_path, debug=False):
     except Exception:
         text = None
 
+    # image smooth edges
     gradient = cv2.Laplacian(image, cv2.CV_64F)
     gradient_magnitude = np.abs(gradient).mean()
 
@@ -384,22 +407,26 @@ def multi_process_slideshow(image_path, debug=False):
     if debug:
         print(f"Feelings: {top_three_feelings}")
 
+    # environment
     environment = detect_environment_from_image(image)
 
     if debug:
         print(f"Environement: {environment}")
 
+    # sift
     sift = cv2.SIFT_create()
     keypoints, __descriptors = sift.detectAndCompute(gray_image, None)
 
     if debug:
         print(f"Sift: {len(keypoints)}")
 
+    # detected_objects
     detected_objects_labels = object_detection_from_image(image)
 
     if debug:
         print(f"Detection: {detected_objects_labels}")
 
+    # Face Detection
     image = face_recognition.load_image_file(image_path)
     face_locations = face_recognition.face_locations(image, model="hog")
 
@@ -438,6 +465,8 @@ def generate_slideshow_dataframe(
     checkpoint_path="./data/tmp/slideshow_checkpoint.pkl",
     checkpoint_interval=50,
 ):
+    # This function loops through an album and finds images depending on a vast amount of filters and creates a slideshow folder with images in target path.
+    # Since this function contains a lot of analysis, it is super slow, but will yield some interesting results. Leave a filter parameter with None value to ignore calculation.
 
     image_paths = file.find_images(path)
 
@@ -455,6 +484,7 @@ def generate_slideshow_dataframe(
 
     i = 0
     dfss = []
+    # Load checkpoint if exist
     try:
         with open(checkpoint_path, "rb") as f:
             dfss, i = pickle.load(f)
@@ -510,31 +540,40 @@ def create_slideshow(
     csv_path="./data/tmp/ss_db.csv",
     checkpoint_interval=50,
 
+    # Color analysis
     color_dominance=None,  # bgr, check for color dominant occurrences
     color_diversity=None,  # high large diversity
     color_warmth=None,  # low = cold, high = warm
     image_intensity=None,
     image_contrast=None,
 
+    # Image file specific
     min_image_quality=None,
     min_image_resolution=(0, 0),
     max_image_resolution=(4000, 4000),
     image_file_formats=None,
     aspect_ratio_range=None,
 
+    # Text detection
     text_amount=None,
     text=None,
 
+    # Corner detection
     image_smooth_edges=None,
 
+    # Sentient Analysis
     image_feeling=None,
 
+    # Environment Analysis
     environment=None,  # "outside"
 
+    # Feature extraction
     sift_features=None,
 
+    # Face detection
     people=None,
 
+    # Object detection
     allowed_objects=None,  # None, allows all
     not_allowed_objects=None,  # None, ignores None
 ):
@@ -552,6 +591,7 @@ def create_slideshow(
     except FileNotFoundError as e:
         pass
 
+    # Save df to file
     file.save_csv(csv_path, df)
 
     create_slideshow_from_df_and_filters(
@@ -579,13 +619,16 @@ def create_slideshow(
     )
     return df
 
+
 import math
+
 
 def color_distance(color1, color2):
     r_diff = color1[0] - color2[0]
     g_diff = color1[1] - color2[1]
     b_diff = color1[2] - color2[2]
     return math.sqrt(r_diff**2 + g_diff**2 + b_diff**2)
+
 
 def create_slideshow_from_df_and_filters(
     df,
@@ -596,31 +639,40 @@ def create_slideshow_from_df_and_filters(
     image_intensity=None,
     image_contrast=None,
 
+    # Image file specific
     min_image_quality=None,
     min_image_resolution=(0, 0),
     max_image_resolution=(4000, 4000),
     image_file_formats=None,
     aspect_ratio_range=(0, 4),
 
+    # Text detection
     text_amount=None,
     text=None,
 
+    # Corner detection
     image_smooth_edges=None,
 
+    # Sentient Analysis
     image_feeling=None,
 
+    # Environment Analysis
     environment=None,  # "outside"
 
+    # Feature extraction
     sift_features=None,
 
+    # Face detection
     people=None,
 
+    # Object detection
     allowed_objects=None,  # None, allows all
     not_allowed_objects=None,  # None, ignores None
 ):
     print("----- Creating Slideshow -----")
-    
-    dest = file.get_appropriate_incremental_name("slideshow",target_path)
+
+    # Create target folder
+    dest = file.get_appropriate_incremental_name("slideshow", target_path)
     os.makedirs(dest, exist_ok=True)
 
     slide_show_image_paths = []
@@ -630,7 +682,7 @@ def create_slideshow_from_df_and_filters(
         if color_dominance is not None:
             if color_distance(row["color_dominance"], color_dominance) > 100:
                 continue
-            
+
         if color_diversity is not None:
             if color_diversity == Level.LOW:
                 if row["color_diversity"] >= 0.2:
@@ -684,20 +736,30 @@ def create_slideshow_from_df_and_filters(
                     continue
 
         if min_image_resolution is not None:
-            if min_image_resolution[0] > row["image_resolution"][0] or min_image_resolution[1] > row["image_resolution"][1]:
+            if (
+                min_image_resolution[0] > row["image_resolution"][0]
+                or min_image_resolution[1] > row["image_resolution"][1]
+            ):
                 continue
-        
+
         if max_image_resolution is not None:
-            if max_image_resolution[0] < row["image_resolution"][0] or max_image_resolution[1] < row["image_resolution"][1]:
+            if (
+                max_image_resolution[0] < row["image_resolution"][0]
+                or max_image_resolution[1] < row["image_resolution"][1]
+            ):
                 continue
 
         if image_file_formats is not None:
             if row["image_file_format"] not in image_file_formats:
                 continue
-        
+
         if aspect_ratio_range is not None:
-            if aspect_ratio_range[0] < row["aspect_ratio_range"]  < aspect_ratio_range[1]:
-                continue        
+            if (
+                aspect_ratio_range[0]
+                < row["aspect_ratio_range"]
+                < aspect_ratio_range[1]
+            ):
+                continue
 
         if text_amount is not None:
             if text_amount > len(row["text"]):
@@ -723,7 +785,7 @@ def create_slideshow_from_df_and_filters(
             for feel in image_feeling:
                 if feel not in row["image_feeling"]:
                     continue
-        
+
         if environment is not None:
             if row["environment"] not in environment:
                 continue
@@ -759,16 +821,16 @@ def create_slideshow_from_df_and_filters(
             for obj in not_allowed_objects:
                 if obj in row["objects"]:
                     continue
-        
+
         slide_show_image_paths.append(row["image_path"])
-            
+
     print(f"Amount of images in slideshow: {len(slide_show_image_paths)}")
-    
 
     for image in slide_show_image_paths:
         dest_path = file.get_appropriate_incremental_name(image, dest)
         shutil.copy(image, dest_path)
         print(f"Copied file to {dest_path}")
+
 
 def create_face_collage(df, persons, target_path, resolution):
     print("----- Generate Collage -----")
@@ -776,6 +838,7 @@ def create_face_collage(df, persons, target_path, resolution):
     for person in persons:
         personal_df = db.get_all_occurrences_of_individual(df, person)
 
+        # collect cropped faces
         for _, row in personal_df.iterrows():
             img = cv2.imread(row["image_path"])
             top, right, bottom, left = row["box"]
@@ -800,10 +863,11 @@ def create_face_collage(df, persons, target_path, resolution):
 
 def merge_images(
     images, output_width, output_height
-):  
+):  # Compute number of rows and columns in final merged image
     if len(images) == 0:
         return None
 
+    # Determine number of rows and columns in grid
     num_images = len(images)
     num_cols = int(np.ceil(np.sqrt(num_images)))
     num_rows = int(np.ceil(num_images / num_cols))
@@ -812,11 +876,14 @@ def merge_images(
     print(f"Image merge dimensions: {num_cols}x{num_rows}")
     print(f"Output image resolutiong: {output_width}x{output_height}")
 
+    # Compute width and height of each sub-image
     subimage_width = int(output_width / num_cols)
     subimage_height = int(output_height / num_rows)
 
+    # Create output image
     output_image = np.zeros((output_height, output_width, 3), dtype=np.uint8)
 
+    # Loop over sub-images and place them in output image
     for i, img in enumerate(images):
         row_idx = i // num_cols
         col_idx = i % num_cols
