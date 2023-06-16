@@ -7,7 +7,7 @@ import shutil
 from utils import db
 from utils import file
 from utils import run
-from utils import ai
+from utils import features
 import os
 from pyfiglet import Figlet
 
@@ -55,4 +55,4 @@ if __name__ == "__main__":
     # print(tabulate(df, headers='keys', tablefmt='psql'))
     print(df)
 
-    collage = ai.create_face_collage(df, ["Unknown11"], target_path, (1920, 1080))
+    collage = features.create_face_collage(df, ["Unknown11"], target_path, (1920, 1080))

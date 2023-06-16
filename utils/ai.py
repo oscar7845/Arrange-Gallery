@@ -11,66 +11,6 @@ import os
 import cv2
 
 
-def create_face_collage(df, persons, target_path, resolution):
-    print("----- Generate Collage -----")
-    cropped_faces = []
-    for person in persons:
-        personal_df = db.get_all_occurrences_of_individual(df, person)
-
-        for _, row in personal_df.iterrows():
-            img = cv2.imread(row["image_path"])
-            top, right, bottom, left = row["box"]
-            width = right - left
-            height = bottom - top
-            x = left
-            y = top
-            cropped_faces.append(img[y : y + height, x : x + width])
-
-    merged_image = merge_images(cropped_faces, resolution[0], resolution[1])
-    if merged_image is None:
-        print(f"No faces found for person {person}.")
-        return None
-
-    os.makedirs(target_path, exist_ok=True)
-    dest = file.get_appropriate_incremental_name("face_collage.png", target_path)
-    cv2.imwrite(dest, merged_image)
-    print(f"Saved collage at {dest}.")
-
-    return merged_image
-
-
-def merge_images(
-    images, output_width, output_height
-):  
-    if len(images) == 0:
-        return None
-
-    num_images = len(images)
-    num_cols = int(np.ceil(np.sqrt(num_images)))
-    num_rows = int(np.ceil(num_images / num_cols))
-
-    print(f"Amount of images to merge: {len(images)}")
-    print(f"Image merge dimensions: {num_cols}x{num_rows}")
-    print(f"Output image resolutiong: {output_width}x{output_height}")
-
-    subimage_width = int(output_width / num_cols)
-    subimage_height = int(output_height / num_rows)
-
-    output_image = np.zeros((output_height, output_width, 3), dtype=np.uint8)
-
-    for i, img in enumerate(images):
-        row_idx = i // num_cols
-        col_idx = i % num_cols
-
-        img_resized = cv2.resize(img, (subimage_width, subimage_height))
-
-        x = col_idx * subimage_width
-        y = row_idx * subimage_height
-
-        output_image[y : y + subimage_height, x : x + subimage_width, :] = img_resized
-
-    return output_image
-
 def detect_persons(
     df,
     tolerance=0.6,
