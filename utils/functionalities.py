@@ -66,9 +66,9 @@ def detect_environment_from_image(image):
     hist = cv2.calcHist([image], [0, 1, 2], None, [4, 1, 1], [0, 256, 0, 256, 0, 256])
     hist = cv2.normalize(hist, hist).flatten()
 
-    # Calculate texture features using gray image
+    # Calculate texture features using the gray image
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray = cv2.resize(gray, (256, 256))  # Resize image if needed
+    gray = cv2.resize(gray, (256, 256))  # Resize the image if needed
 
     glcm = graycomatrix(
         gray, distances=[1], angles=[0], levels=256, symmetric=True, normed=True
@@ -90,7 +90,6 @@ def detect_environment_from_image(image):
         )
         scores[environment] = color_hist_sim + glcm_sim
 
-    # Get environment with highest similarity score
     max_score = max(scores.values())
     detected_environment = [env for env, score in scores.items() if score == max_score][
         0
@@ -100,7 +99,6 @@ def detect_environment_from_image(image):
 
 
 def detect_feelings_from_image_pixel_array(pixels):
-    # image feeling, return top 3
     avg_color = np.mean(pixels, axis=0)
     emotions = {
         "Angry": [(0, 0, 0), (127, 127, 127)],
@@ -166,7 +164,6 @@ def detect_feelings_from_image_pixel_array(pixels):
         "Skeptical": [(128, 0, 0), (255, 127, 127)],
     }
 
-    # Compare average RGB values with emotion color ranges
     image_feelings = []
     for emotion, (lower, upper) in emotions.items():
         if np.all(lower <= avg_color) and np.all(avg_color <= upper):
@@ -176,7 +173,6 @@ def detect_feelings_from_image_pixel_array(pixels):
 
 
 def object_detection_from_image(image, min_score=0.6):
-    # Faster RCNN resnet 50 using pytorch, will download cache model first run. trained on COCO dataset.
     COCO_OBJECT_CATEGORIES = [
         "__background__",
         "person",
@@ -281,7 +277,6 @@ def object_detection_from_image(image, min_score=0.6):
     detected_objects_labels = predictions[0]["labels"].tolist()
     detected_objects_scores = predictions[0]["scores"].tolist()
 
-    # Convert labels to object names and combine with scores
     detected_object_names = [
         COCO_OBJECT_CATEGORIES[label] for label in detected_objects_labels
     ]
@@ -296,7 +291,6 @@ def object_detection_from_image(image, min_score=0.6):
 
 
 def multi_process_slideshow(image_path, debug=False):
-    #Detects faces and face encoding using (HOG default) + Linear SVM face detection.
     df = db.create(
         [
             "image_path",
@@ -329,8 +323,14 @@ def multi_process_slideshow(image_path, debug=False):
     pixels = image_rgb.reshape(-1, 3)
 
     # color_dominance
-    histogram = np.bincount(pixels[:, 0])
-    dominant_color = np.argmax(histogram)
+    red_histogram = np.bincount(pixels[:, 0])
+    green_histogram = np.bincount(pixels[:, 1])
+    blue_histogram = np.bincount(pixels[:, 2])
+    dominant_red = np.argmax(red_histogram)
+    dominant_green = np.argmax(green_histogram)
+    dominant_blue = np.argmax(blue_histogram)
+    dominant_color = (dominant_red, dominant_green, dominant_blue)
+
 
     if debug:
         print(f"DominantColor: {dominant_color}")
@@ -465,9 +465,6 @@ def generate_slideshow_dataframe(
     checkpoint_path="./data/tmp/slideshow_checkpoint.pkl",
     checkpoint_interval=50,
 ):
-    # This function loops through an album and finds images depending on a vast amount of filters and creates a slideshow folder with images in target path.
-    # Since this function contains a lot of analysis, it is super slow, but will yield some interesting results. Leave a filter parameter with None value to ignore calculation.
-
     image_paths = file.find_images(path)
 
     if len(image_paths) < checkpoint_interval:
@@ -685,43 +682,44 @@ def create_slideshow_from_df_and_filters(
 
         if color_diversity is not None:
             if color_diversity == Level.LOW:
-                if row["color_diversity"] >= 0.2:
+                print(row["color_diversity"])
+                if row["color_diversity"] >= 0.00000002:
                     continue
             elif color_diversity == Level.MODERATE:
-                if row["color_diversity"] < 0.2 or row["color_diversity"] > 0.5:
+                if row["color_diversity"] < 0.00000002 or row["color_diversity"] > 0.000005:
                     continue
             elif color_diversity == Level.HIGH:
-                if row["color_diversity"] <= 0.5:
+                if row["color_diversity"] <= 0.000005:
                     continue
 
         if color_warmth is not None:
             if color_warmth == Heat.COLD:
-                if row["color_warmth"] > 0.5:
+                if row["color_warmth"] > 0.025:
                     continue
             elif color_warmth == Heat.WARM:
-                if row["color_warmth"] < 0.5:
+                if row["color_warmth"] < 0.025:
                     continue
 
         if image_intensity is not None:
             if image_intensity == Level.LOW:
-                if row["image_intensity"] >= 0.2:
+                if row["image_intensity"] >= 50:
                     continue
             elif image_intensity == Level.MODERATE:
-                if row["image_intensity"] < 0.2 or row["image_intensity"] > 0.5:
+                if row["image_intensity"] < 50 or row["image_intensity"] > 150:
                     continue
             elif image_intensity == Level.HIGH:
-                if row["image_intensity"] <= 0.5:
+                if row["image_intensity"] <= 150:
                     continue
 
         if image_contrast is not None:
             if image_contrast == Level.LOW:
-                if row["image_contrast"] >= 0.2:
+                if row["image_contrast"] >= 40:
                     continue
             elif image_contrast == Level.MODERATE:
-                if row["image_contrast"] < 0.2 or row["image_contrast"] > 0.5:
+                if row["image_contrast"] < 40 or row["image_contrast"] > 60:
                     continue
             elif image_contrast == Level.HIGH:
-                if row["image_contrast"] <= 0.5:
+                if row["image_contrast"] <= 60:
                     continue
 
         if min_image_quality is not None:
@@ -802,7 +800,10 @@ def create_slideshow_from_df_and_filters(
                     continue
 
         if people is not None:
-            if people == Level.LOW:
+            if people == Level.NONE:
+                if row["people"] != 0:
+                    continue
+            elif people == Level.LOW:
                 if row["people"] >= 2:
                     continue
             elif people == Level.MODERATE:
@@ -813,14 +814,22 @@ def create_slideshow_from_df_and_filters(
                     continue
 
         if allowed_objects is not None:
+            skip=False
             for obj in allowed_objects:
-                if obj not in row["objects"]:
-                    continue
+                if obj.lower() not in row["objects"][0]:
+                    skip=True
+                    break
+            if skip:
+                continue
 
         if not_allowed_objects is not None:
+            skip=False
             for obj in not_allowed_objects:
-                if obj in row["objects"]:
-                    continue
+                if obj.lower() in row["objects"][0]:
+                    skip=True
+                    break
+            if skip:
+                continue
 
         slide_show_image_paths.append(row["image_path"])
 
@@ -863,11 +872,10 @@ def create_face_collage(df, persons, target_path, resolution):
 
 def merge_images(
     images, output_width, output_height
-):  # Compute number of rows and columns in final merged image
+):
     if len(images) == 0:
         return None
 
-    # Determine number of rows and columns in grid
     num_images = len(images)
     num_cols = int(np.ceil(np.sqrt(num_images)))
     num_rows = int(np.ceil(num_images / num_cols))
@@ -876,14 +884,11 @@ def merge_images(
     print(f"Image merge dimensions: {num_cols}x{num_rows}")
     print(f"Output image resolutiong: {output_width}x{output_height}")
 
-    # Compute width and height of each sub-image
     subimage_width = int(output_width / num_cols)
     subimage_height = int(output_height / num_rows)
 
-    # Create output image
     output_image = np.zeros((output_height, output_width, 3), dtype=np.uint8)
 
-    # Loop over sub-images and place them in output image
     for i, img in enumerate(images):
         row_idx = i // num_cols
         col_idx = i % num_cols
