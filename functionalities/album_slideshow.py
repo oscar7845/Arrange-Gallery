@@ -23,13 +23,14 @@ if __name__ == "__main__":
     color_diversity = None  # example Level.MODERATE # high large diversity
     color_warmth = None  # example Heat.COLD, low = cold, high = warm
     image_intensity = None # example Level.MODERATE
-    image_contrast = Level.MODERATE # example Level.MODERATE
+    image_contrast = None # example Level.MODERATE
+
     # Image file specific
-    min_image_quality = None
+    min_image_quality = None # example Level.LOW - test
     min_image_resolution = (0, 0)
     max_image_resolution = (4000, 4000)
-    image_file_formats = None  # List of formats
-    aspect_ratio_range = (0, 2)
+    image_file_formats = None # example ["JPG"] # List of formats - test
+    aspect_ratio_range = (0, 2) 
 
     # Text detection
     text_amount = None
