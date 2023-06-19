@@ -8,9 +8,11 @@ from utils import file
 import os
 from pyfiglet import Figlet
 
+# Tested in test_file.py
+
 if __name__ == "__main__":
     f = Figlet(font="slant")
-    print(f.renderText("text"))
+    print(f.renderText("Arrange Gallery"))
     print("----- Handle Duplicates -----")
 
     album_path = "./images/"

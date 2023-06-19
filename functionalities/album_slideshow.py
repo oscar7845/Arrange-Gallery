@@ -11,7 +11,7 @@ import shutil
 
 if __name__ == "__main__":
     f = Figlet(font="slant")
-    print(f.renderText("text"))
+    print(f.renderText("Arrange Gallery"))
 
     album_path = "./images/"
     target_path = "./target/"
@@ -19,65 +19,73 @@ if __name__ == "__main__":
     #-------------------#
     # Slideshow filters #
     #-------------------#
+    
+    # Are ignored if set to None
 
     # Color analysis
-    
     # bgr, check for color dominant occurrences, uses color euclidean distance > 100
-    color_dominance = None # exemple (0,0,0)  
+    color_dominance = None  # example (0,0,0)
+
     # high value -> large diversity
     color_diversity = None  # example Level.MODERATE
+
     # Set heat color of images
-    color_warmth = None  # example Heat.COLD,
+    color_warmth = None  # example Heat.COLD
 
     # Image file specific
-
     # Intensity of image values
-    image_intensity = None # example Level.MODERATE
+    image_intensity = None  # example Level.MODERATE
+
     # Contrast of images
-    image_contrast = None # example Level.MODERATE
+    image_contrast = None  # example Level.MODERATE
+
     # Set image quality, uses saturn and laplacian
-    min_image_quality = None # example Level.LOW 
+    min_image_quality = None  # example Level.LOW
+
     # Set minimum resolution
-    min_image_resolution = None # example (0, 0)
+    min_image_resolution = None  # example (0, 0)
+
     # Set maximum resolution
-    max_image_resolution = None # example (4000, 4000)
+    max_image_resolution = None  # example (4000, 4000)
+
     # Image file format
-    image_file_formats = None # example ["JPG"] # List of formats, strings should be UPPER
+    # List of formats, strings should be UPPER
+    image_file_formats = None  # example ["JPG"]
+
     # Image aspect ratio range
-    aspect_ratio_range = None # example (0, 2)
-    
+    aspect_ratio_range = None  # example (0, 2)
 
     #----------------#
     # Text detection #
     #----------------#
 
     # Calculates the amount of words found in images
-    text_amount = None # example 1 
+    text_amount = None  # example 1
 
     # Search for words in images
-    text = None # example ["text"]
+    text = None  # example ["text"]
 
     # Corner detection
-    image_smooth_edges = None # example Level.MODERATE
-    
-    # Sentient Analysis - detects feelings from image average color
-    image_feeling = None # example ["Calm"] - list of feelings
+    image_smooth_edges = None  # example Level.MODERATE
 
-    # Environment Analysis - estimate environmet from glcm 
-    environment = None # example ["Urban"] - list of environments 
+    # Sentient Analysis - detects feelings from image average color
+    image_feeling = None  # example ["Calm"] - list of feelings
+
+    # Environment Analysis - estimate environmet from glcm
+    environment = None  # example ["Urban"] - list of environments
 
     # Feature extraction - SIFT feature extraction
-    sift_features = None # example Level.LOW
+    sift_features = None  # example Level.LOW
 
     # Face detection - amount of people in images - dlib face detection
-    people = None # example, Level.LOW # level
+    people = None  # example, Level.LOW # level
 
     # Object detection - RCNN using COCO dataset
     allowed_objects = None  # example ["tie"] create a list of strings of object names
-    not_allowed_objects = None # example ["remote"]
+    not_allowed_objects = None  # example ["remote"]
 
-    workers = 1 # amount of concurrent processes
-    checkpoint_path = "./data/tmp/slideshow_checkpoint.pkl" 
+    workers = 1  # amount of concurrent processes
+    checkpoint_path = "./data/tmp/slideshow_checkpoint.pkl"
     csv_path = "./data/tmp/ss_db.csv"
     checkpoint_interval = 50
 
