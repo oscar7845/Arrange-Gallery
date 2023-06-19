@@ -3,7 +3,6 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-
 from utils import file
 import os
 from pyfiglet import Figlet
@@ -19,4 +18,3 @@ if __name__ == "__main__":
 
     duplicate_path_tuples = file.find_duplicates(album_path)
     print(f"Found duplicates in album: {len(duplicate_path_tuples)}")
-    file.remove_duplicates(duplicate_path_tuples)
