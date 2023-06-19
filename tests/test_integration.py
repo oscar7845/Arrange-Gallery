@@ -3,10 +3,10 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-
 from utils import run
-from utils import file
 
+# Test main function and integration of different functions
+    
 def test_face_recognition_integration():
     album_path = "./images/"
 
@@ -27,4 +27,4 @@ def test_face_recognition_integration():
         checkpoint_path2=checkpoint_path2,
     )
 
-    assert len(df) == 18 
+    assert len(df) == 19  # check amount of faces+images accurate

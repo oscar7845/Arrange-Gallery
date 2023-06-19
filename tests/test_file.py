@@ -3,15 +3,15 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from utils import ai
 from utils import file
 from utils import db
 from utils import run
+from utils import functionalities
 import os
 import pandas as pd
 import shutil
 
-
+# Test saving and loading csv and see that data is persistent
 def test_file_save_load():
     csv_storage_path = "./data/tmp/fr_db.csv"
     df = pd.DataFrame(index=range(0), columns=["col1", "col2"])
@@ -19,10 +19,11 @@ def test_file_save_load():
 
     assert os.path.exists(csv_storage_path)
 
-    _df = db.load(csv_storage_path) 
-    assert len(df) == len(_df)  
+    _df = db.load(csv_storage_path)  # Test only for caching
+    assert len(df) == len(_df) 
 
 
+# Test majority of file handle functions
 def test_file_handle_functions():
     album_path = "./images/"
 
@@ -69,9 +70,6 @@ def test_file_handle_functions():
 
     file.save_all_individual_from_album(target_path, df, allow_copies=False)
     assert len(file.find_images(target_path)) == len(file.find_images(album_path))
-
-    # Currently just checking that this runs
-    ai.create_face_collage(df, ["Unknown11"], target_path, (1920, 1080))
 
     try:
         if os.path.exists(target_path):

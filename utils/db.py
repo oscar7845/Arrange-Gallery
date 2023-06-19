@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 def load_dataframe(path):
     return pd.read_csv(path)
 
@@ -29,10 +28,10 @@ def get_all_occurrences_of_individual(df, id):
 def get_all_images_of_non_individuals(df):
     return df[df["id"].isnull()]["image_path"].unique()
 
-
 def get_all_images_missing_faces(df):
     return df[df["box"] == None]["image_path"].unique()
 
+# Take dataframe and return two lists of found person name and corresponding face encoding
 def get_known_face_encodings(df):
     known_face_names = []
     known_face_encodings = []

@@ -7,6 +7,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from utils import db
 from utils import run
 
+# Test majority of dataframe related functions
+
 def test_db_functions():
     album_path = "./images/"
 
