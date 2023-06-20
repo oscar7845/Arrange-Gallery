@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  arrangepics:
+    build: ./  
+    container_name: arrangepics
+    image: oscar/arrangepics 
+    entrypoint: /app/docker-entrypoint.sh
+    command: [""] 
+    volumes:
+        - ./target:/app/target:rw,z
+        - ./data:/app/data:rw
+    environment:
+      - COMPOSE_CONVERT_WINDOWS_PATHS=1
