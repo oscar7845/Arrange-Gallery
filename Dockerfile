@@ -34,3 +34,9 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy the application code into the container
 COPY . .
+
+# Make entrypoint script executable
+RUN chmod +x ./docker-entrypoint.sh
+
+# Set the entrypoint script
+ENTRYPOINT ["./docker-entrypoint.sh"]
