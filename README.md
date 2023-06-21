@@ -19,3 +19,50 @@ During this project I learned to work with Python libraries like face_recognitio
 
 ## Roadmap
 The next step would be to add functionalities for additional filters for slideshow creation and more advanced face recognition techniques for better accuracy. It also needs some improvements particularly for handling very large image albums.
+
+# Useful commands
+
+##Build the Docker Image
+Build a Docker image based on the instructions in the Dockerfile.
+```sh
+docker-compose build arrangepics
+```
+
+##Generate face collages per person. 
+This will crop all faces of a specified person in a photo album and merge them together resulting in a large collage of faces. 
+```sh
+docker-compose run arrangepics --collage
+```
+
+##Slideshows
+A sentient slideshow is a slideshow that has been generated using a multitude of filters depending on Computer Vision. See the script file in ./functionalities to see all filters. 
+```sh
+docker-compose run arrangepics --slideshow
+```
+
+##Resize All Images
+Resize all images in an album, either crop, resize or rescale.
+```sh
+docker-compose run arrangepics --image-resize
+```
+
+##Detect and Remove Duplicate Images
+Detect (optional) and remove duplicate images in albums. 
+```sh
+docker-compose run arrangepics --detect-duplicates
+```
+```sh
+docker-compose run arrangepics --remove-duplicates
+```
+
+##Run with the pytest argument
+```sh
+docker-compose run arrangepics --pytest
+```
+
+##Push the Docker Image to Docker Hub
+This command pushes your Docker image to Docker Hub. Replace tagname with the tag you want to give this version of your Docker image, such as latest.
+```sh
+docker push app/arrangepics:tagname
+```
+
